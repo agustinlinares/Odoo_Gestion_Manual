@@ -5,6 +5,9 @@ A partir de los archivos proporcionados se ha desarrollado un proyecto completo 
 El proyecto no se limita únicamente a programar un módulo, sino que abarca todo el ciclo de vida de un ERP, desde la instalación de la infraestructura, pasando por el desarrollo técnico, hasta la documentación de uso final para usuarios no técnicos.
 
 🏗️ Alcance del Proyecto
+
+.
+
 🔧 1. Instalación y Despliegue del ERP
 
 Se documenta de forma detallada el proceso de instalación de Odoo 18 (Community) en un entorno Linux Ubuntu, incluyendo:
@@ -104,7 +107,11 @@ En conjunto, estos archivos reflejan el desarrollo de un proyecto ERP completo, 
 ✔ Enfoque realista, orientado a empresa y mantenimiento
 
 No se trata solo de “hacer funcionar Odoo”, sino de implantar, extender y documentar un ERP de forma profesional, como se haría en un proyecto real de empresa.
+
 .
-👤 Agustín Linares Carrera 📱 Proyecto desarrollado como parte de un aprendizaje intensivo en Sistemas de Gestión Empresarial
+
+👤 Agustín Linares Carrera 
+
+📱 Proyecto desarrollado como parte de un aprendizaje intensivo en Sistemas de Gestión Empresarial
 
 https://odoo-manuales.netlify.app
