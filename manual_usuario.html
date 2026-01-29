@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manual de usuario — RR. HH. (Odoo 18) | Asistencias</title>
+  <meta name="description" content="Manual de usuario (Odoo 18 - RR. HH.): Asistencias (fichaje, quiosco, aprobaciones, reportes) y procesos base (departamentos, puestos, contratos, empleados)." />
+  <link rel="stylesheet" href="./indexStyles.css" />
+
+  <style>
+    /* Vídeos con miniaturas (reproducción inline) */
+    .doc-btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px; border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(233,84,32,.10);
+      text-decoration:none; font-weight:800;
+      margin: 6px 0 14px;
+    }
+    .doc-btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    .video-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .video-card{
+      appearance:none;
+      border:1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow:hidden;
+      padding:0;
+      text-align:left;
+      cursor:pointer;
+      box-shadow: var(--shadow);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .video-card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-strong); }
+    .video-card:focus-visible{ outline: 3px solid rgba(233,84,32,.35); outline-offset: 2px; }
+
+    .video-card .thumb{ position:relative; display:block; aspect-ratio: 16 / 9; background: rgba(0,0,0,.08); }
+    .video-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .video-card .play{
+      position:absolute; inset:auto auto 10px 10px;
+      width:44px; height:44px;
+      display:grid; place-items:center;
+      border-radius: 999px;
+      background: rgba(0,0,0,.72);
+      color: #fff; font-size: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(6px);
+    }
+    .video-meta{ display:flex; justify-content:space-between; gap:12px; padding: 10px 12px 12px; color: var(--muted); font-size: .92rem; }
+    .video-title{ color: var(--text); font-weight: 900; }
+    .video-id{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; opacity:.75; }
+
+    .video-embed{ border:1px solid var(--border); border-radius: var(--radius-lg); overflow:hidden; background: var(--surface); box-shadow: var(--shadow); }
+    .video-embed .frame{ aspect-ratio: 16 / 9; width:100%; display:block; border:0; }
+    .video-embed .embed-bar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 10px 12px; border-top:1px solid var(--border); color: var(--muted); font-size: .92rem; }
+    .video-embed a{ text-decoration:none; font-weight:800; color: var(--secondary); }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header doc-header" id="top">
+    <div class="header-bg" aria-hidden="true"></div>
+    <div class="header-inner">
+      <div class="kicker">Odoo 18 · Recursos Humanos · Manual de usuario</div>
+      <h1>Manual de usuario — Asistencias (RR. HH.)</h1>
+      <p class="subtitle">
+        Guía práctica para el día a día: <strong>fichaje</strong>, <strong>quiosco</strong>, <strong>correcciones</strong>,
+        <strong>aprobaciones</strong> y <strong>reportes</strong>. Incluye también procesos base de RR. HH.
+        (departamentos, puestos, contratos y empleados).
+      </p>
+      <div class="meta">
+      <div class="meta">
+        <div class="author">
+          <span class="dot" aria-hidden="true"></span>
+          Documento de <strong>Agustín Linares Carrera</strong>
+        </div>
+        </div>
+        <ul class="chips" aria-label="Etiquetas">
+          <li class="chip">Ubuntu 24.04 LTS</li>
+          <li class="chip">Odoo 18</li>
+          <li class="chip">RR. HH.</li>
+          <li class="chip">Asistencias</li>
+        </ul>
+      </div>
+
+      <nav class="topnav" aria-label="Navegación">
+        <a class="navlink" href="./index.html">← Portada</a>
+        <a class="navlink" href="./instalacion.html">Instalación</a>
+        <a class="navlink" href="./manual_instalación_Pycharm.html">PyCharm</a>
+        <a class="navlink" href="./guia_tecnica.html">Guía técnica</a>
+        <a class="navlink" href="./manual_usuario.html">Manual de usuario</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido" class="document-page">
+    <section class="toc" aria-label="Índice">
+      <h2>Índice</h2>
+      <ul>
+        <li><a href="#como-usar">Cómo usar este manual</a></li>
+        <li><a href="#a-permisos">A. Permisos y accesos</a></li>
+        <li><a href="#a-aprobadores">B. Aprobadores</a></li>
+        <li><a href="#a-config">C. Configuración Asistencias</a></li>
+        <li><a href="#a-fichaje">D. Fichaje (backend)</a></li>
+        <li><a href="#a-quiosco">E. Quiosco</a></li>
+        <li><a href="#a-credencial">F. Credenciales / Código de barras</a></li>
+        <li><a href="#a-gestion">G. Gestión y aprobaciones</a></li>
+        <li><a href="#a-reportes">H. Reportes</a></li>
+        <li><a href="#p-departamentos">P1. Departamentos</a></li>
+        <li><a href="#p-puestos">P2. Puestos</a></li>
+        <li><a href="#p-tipos-contrato">P3. Tipos de contrato</a></li>
+        <li><a href="#p-contratos">P4. Contratos</a></li>
+        <li><a href="#p-etiquetas">P5. Etiquetas</a></li>
+        <li><a href="#p-calendarios">P6. Calendarios laborales</a></li>
+        <li><a href="#p-empleados">P7. Empleados</a></li>
+        <li><a href="#p-fichaje-dispositivos">P8. Fichar PC/Móvil</a></li>
+        <li><a href="#p-quiosco-rfid">P9. Quiosco/RFID</a></li>
+        <li><a href="#tutoriales">Tutoriales en vídeo</a></li>
+        <li><a href="#notas">Notas finales</a></li>
+      </ul>
+    </section>
+
+<section class="doc-section" id="como-usar">
+          <h2>Cómo usar este manual</h2>
+          <ul>
+            <li>Sigue el orden A→H si estás configurando Asistencias por primera vez.</li>
+            <li>Usa P1→P9 para dar de alta la estructura de RR. HH. (departamentos, empleados, etc.).</li>
+            <li>Los “Paths” indican la ruta de menú típica en Odoo (puede variar según permisos).</li>
+          </ul>
+          <div class="ok"><strong>Tip:</strong> si algo no aparece, revisa primero <a href="#a-permisos">permisos y accesos</a>.</div>
+        </section>
+
+<section class="doc-section" id="a-permisos">
+          <h2>A. Permisos y accesos</h2>
+          <p>Configura quién puede acceder a Asistencias y quién gestiona RR. HH.</p>
+          <div class="file-content"><pre>Ajustes ▸ Usuarios y empresas ▸ Usuarios ▸ (Usuario) ▸ Permisos de acceso ▸ RR. HH. ▸ Asistencias</pre></div>
+
+          <ol>
+            <li>Entra en <strong>Ajustes</strong> y abre <strong>Usuarios</strong>.</li>
+            <li>Selecciona el usuario (RR. HH. o responsable).</li>
+            <li>En <strong>RR. HH. ▸ Asistencias</strong>, asigna el rol adecuado.</li>
+            <li>Guarda y vuelve a iniciar sesión si has cambiado permisos.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-21.svg" alt="Permisos de acceso RR. HH. Asistencias (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 21.</strong> Ajustes ▸ Usuarios ▸ Permisos RR. HH. ▸ Asistencias.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="a-aprobadores">
+          <h2>B. Aprobadores</h2>
+          <p>Asigna quién aprueba asistencias y correcciones en cada ficha de empleado.</p>
+          <div class="file-content"><pre>Empleados ▸ (Empleado) ▸ Información de trabajo ▸ Aprobadores ▸ Asistencia</pre></div>
+
+          <ol>
+            <li>Abre la ficha del empleado.</li>
+            <li>En <strong>Información de trabajo</strong>, localiza <strong>Aprobadores</strong>.</li>
+            <li>Define el aprobador de <strong>Asistencia</strong>.</li>
+            <li>Guarda.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-22.svg" alt="Aprobadores de Asistencia en empleado (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 22.</strong> Empleado ▸ Información de trabajo ▸ Aprobadores ▸ Asistencia.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="a-config">
+          <h2>C. Configuración de Asistencias</h2>
+          <p>Activa opciones como salida automática, tolerancias y modo quiosco.</p>
+          <div class="file-content"><pre>Asistencias ▸ Configuración</pre></div>
+
+          <ol>
+            <li>Entra en <strong>Asistencias</strong>.</li>
+            <li>Abre <strong>Configuración</strong>.</li>
+            <li>Ajusta <strong>Registro de salida automático</strong> y <strong>Tolerancia</strong> según tu política.</li>
+            <li>Guarda.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-23.svg" alt="Configuración de Asistencias (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 23.</strong> Asistencias ▸ Configuración.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="a-fichaje">
+          <h2>D. Fichaje desde el backend</h2>
+          <p>Fichaje mediante el widget del encabezado (usuario conectado).</p>
+          <div class="file-content"><pre>Encabezado ▸ Widget Asistencia ▸ Registrar entrada / Registrar salida</pre></div>
+
+          <ol>
+            <li>El usuario inicia sesión en Odoo.</li>
+            <li>Abre el widget de asistencia (⏱).</li>
+            <li>Pulsa <strong>Registrar entrada</strong>.</li>
+            <li>Al finalizar, pulsa <strong>Registrar salida</strong>.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-24.svg" alt="Widget de fichaje (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 24.</strong> Widget del encabezado con acción de fichaje.</figcaption>
+          </figure>
+
+          <div class="note"><strong>Nota:</strong> si el widget no aparece, revisa permisos y que el módulo de Asistencias esté instalado.</div>
+        </section>
+
+<section class="doc-section" id="a-quiosco">
+          <h2>E. Quiosco</h2>
+          <p>Fichaje en un dispositivo dedicado (tablet/PC) en modo quiosco.</p>
+          <div class="file-content"><pre>Asistencias ▸ Modo quiosco</pre></div>
+
+          <ol>
+            <li>En Asistencias, abre <strong>Modo quiosco</strong>.</li>
+            <li>Selecciona el método de identificación (manual, código de barras, RFID, etc.).</li>
+            <li>Registra entrada/salida.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-25.svg" alt="Quiosco de Asistencias (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 25.</strong> Pantalla de quiosco para fichaje.</figcaption>
+          </figure>
+
+          <div class="warn"><strong>Recomendación:</strong> usa un usuario “kiosk” con permisos mínimos y bloqueo de pantalla.</div>
+        </section>
+
+<section class="doc-section" id="a-credencial">
+          <h2>F. Credenciales / Código de barras</h2>
+          <p>Genera credenciales para escaneo en quiosco (código de barras/QR).</p>
+          <div class="file-content"><pre>Empleados ▸ (Empleado) ▸ Ajustes ▸ Identificación de credencial ▸ Generar / Imprimir</pre></div>
+
+          <ol>
+            <li>Abre la ficha del empleado.</li>
+            <li>En <strong>Ajustes</strong>, localiza <strong>Identificación de credencial</strong>.</li>
+            <li>Pulsa <strong>Generar</strong> si está vacío.</li>
+            <li>Pulsa <strong>Imprimir credencial</strong>.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-26.svg" alt="Credencial del empleado (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 26.</strong> Identificación de credencial en la ficha del empleado.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="a-gestion">
+          <h2>G. Gestión y aprobaciones</h2>
+          <p>Revisa y aprueba registros pendientes (por ejemplo: correcciones o incidencias).</p>
+          <div class="file-content"><pre>Asistencias ▸ Gestión</pre></div>
+
+          <ol>
+            <li>Entra en <strong>Gestión</strong>.</li>
+            <li>Filtra por <strong>Por aprobar</strong> (si aplica).</li>
+            <li>Aprueba o rechaza registros.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-27.svg" alt="Gestión de asistencias (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 27.</strong> Tablero de gestión con registros por aprobar.</figcaption>
+          </figure>
+
+          <div class="note"><strong>Buenas prácticas:</strong> documenta motivo de corrección y define SLA de aprobación.</div>
+        </section>
+
+<section class="doc-section" id="a-reportes">
+          <h2>H. Reportes</h2>
+          <p>Analiza tendencias por empleado/departamento, y exporta cuando sea necesario.</p>
+          <div class="file-content"><pre>Asistencias ▸ Reportes</pre></div>
+
+          <ol>
+            <li>Abre <strong>Reportes</strong>.</li>
+            <li>Filtra por rango de fechas.</li>
+            <li>Agrupa por empleado o departamento.</li>
+            <li>Exporta si necesitas compartir el análisis.</li>
+          </ol>
+
+          <figure class="img-figure">
+            <img src="img/image-28.svg" alt="Reportes de Asistencias (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 28.</strong> Vista de reportes con filtros y agrupación.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-departamentos">
+          <h2>P1. Crear departamentos</h2>
+          <div class="file-content"><pre>Empleados ▸ Departamentos ▸ Nuevo</pre></div>
+          <ol>
+            <li>Abre <strong>Departamentos</strong>.</li>
+            <li>Pulsa <strong>Nuevo</strong>.</li>
+            <li>Completa nombre, gerente y (opcional) departamento padre.</li>
+            <li>Guarda.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-29.svg" alt="Crear departamento (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 29.</strong> Formulario de creación de departamento.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-puestos">
+          <h2>P2. Crear puestos de trabajo</h2>
+          <div class="file-content"><pre>Puestos de trabajo ▸ Nuevo</pre></div>
+          <ol>
+            <li>Abre <strong>Puestos de trabajo</strong>.</li>
+            <li>Pulsa <strong>Nuevo</strong>.</li>
+            <li>Indica título y departamento.</li>
+            <li>Guarda.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-30.svg" alt="Crear puesto de trabajo (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 30.</strong> Formulario de creación de puesto.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-tipos-contrato">
+          <h2>P3. Tipos de contrato</h2>
+          <div class="file-content"><pre>Empleados ▸ Configuración ▸ Tipos de contrato</pre></div>
+          <ol>
+            <li>Abre <strong>Tipos de contrato</strong>.</li>
+            <li>Usa <strong>Nuevo</strong> para crear tipos (Indefinido, Temporal...).</li>
+            <li>Guarda.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-31.svg" alt="Tipos de contrato (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 31.</strong> Listado de tipos de contrato.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-contratos">
+          <h2>P4. Contratos</h2>
+          <div class="file-content"><pre>Empleados ▸ Contratos ▸ Nuevo</pre></div>
+          <ol>
+            <li>Pulsa <strong>Nuevo</strong> en Contratos.</li>
+            <li>Selecciona empleado, tipo, fechas y calendario.</li>
+            <li>Guarda.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-32.svg" alt="Crear contrato (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 32.</strong> Formulario de contrato con campos clave.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-etiquetas">
+          <h2>P5. Etiquetas</h2>
+          <div class="file-content"><pre>Empleados ▸ Configuración ▸ Etiquetas</pre></div>
+          <ol>
+            <li>Abre <strong>Etiquetas</strong>.</li>
+            <li>Crea etiquetas (Teletrabajo, Turno noche...).</li>
+            <li>Asigna etiquetas a empleados para filtrar.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-33.svg" alt="Etiquetas de empleado (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 33.</strong> Listado y creación de etiquetas.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-calendarios">
+          <h2>P6. Calendarios laborales</h2>
+          <div class="file-content"><pre>Empleados ▸ Configuración ▸ Calendarios de trabajo</pre></div>
+          <ol>
+            <li>Abre <strong>Calendarios de trabajo</strong>.</li>
+            <li>Crea uno nuevo con jornadas/horas.</li>
+            <li>Asócialo a contratos.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-34.svg" alt="Calendario laboral (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 34.</strong> Detalle de calendario con jornadas y horas.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-empleados">
+          <h2>P7. Alta de empleados</h2>
+          <div class="file-content"><pre>Empleados ▸ Empleados ▸ Nuevo</pre></div>
+          <ol>
+            <li>Pulsa <strong>Nuevo</strong>.</li>
+            <li>Completa campos básicos (nombre, departamento, puesto, manager).</li>
+            <li>Guarda.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-35.svg" alt="Crear empleado (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 35.</strong> Formulario de empleado con campos básicos.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-fichaje-dispositivos">
+          <h2>P8. Fichar desde PC / móvil</h2>
+          <div class="file-content"><pre>Encabezado ▸ Widget asistencia ▸ Registrar entrada/salida</pre></div>
+          <ol>
+            <li>Accede a Odoo desde el dispositivo.</li>
+            <li>Usa el widget de asistencia para fichar.</li>
+            <li>Comprueba el registro en Asistencias.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-36.svg" alt="Fichaje desde dispositivo (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 36.</strong> Confirmación de fichaje en el backend.</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="p-quiosco-rfid">
+          <h2>P9. Quiosco / RFID</h2>
+          <div class="file-content"><pre>Asistencias ▸ Modo quiosco ▸ Método (manual / código de barras / RFID)</pre></div>
+          <ol>
+            <li>Abre el quiosco en un dispositivo dedicado.</li>
+            <li>Selecciona método de identificación.</li>
+            <li>Escanea credencial o utiliza RFID.</li>
+          </ol>
+          <figure class="img-figure">
+            <img src="img/image-37.svg" alt="Quiosco con método (Odoo 18 ES)" loading="lazy" />
+            <figcaption><strong>Imagen 37.</strong> Quiosco con método seleccionado (código de barras).</figcaption>
+          </figure>
+        </section>
+
+<section class="doc-section" id="notas">
+          <h2>Notas finales</h2>
+          <ul>
+            <li>Si cambias las imágenes a PNG/JPG, mantén los nombres (p. ej. <code>image-21.png</code>) y actualiza el <code>src</code>.</li>
+            <li>Para uso en GitHub Pages, sube el sitio con la estructura: <code>index.html</code>, <code>indexStyles.css</code> y carpeta <code>images/</code>.</li>
+          </ul>
+          <div class="note"><strong>Checklist de entrega:</strong> permisos correctos, quiosco configurado, aprobadores asignados, reportes validados.</div>
+        </section>
+
+
+    <section id="tutoriales" class="doc-section">
+      <div style="margin: 16px 0; text-align: center;">
+       <a class="doc-btn"
+        href="https://www.odoo.com/documentation/18.0/es/applications.html"
+          target="_blank"
+          rel="noopener noreferrer">
+    📘 Documentación oficial de Odoo · Manuales de usuario
+    <span aria-hidden="true">↗</span>
+  </a>
+    </div>
+      <h2>Tutoriales en vídeo</h2>
+      <p>
+        Pulsa en cualquier miniatura para reproducir el tutorial dentro de esta página. Si tu red bloquea el embed de YouTube,
+        usa el enlace “Abrir en YouTube”.
+      </p>
+
+      <a class="doc-btn" href="https://www.odoo.com/documentation/18.0/es/applications/hr/attendances.html#approvers" target="_blank" rel="noopener noreferrer">
+        📘 Documentación oficial de Odoo (Asistencias) <span aria-hidden="true">↗</span>
+      </a>
+
+      <div class="video-grid" aria-label="Tutoriales de YouTube">
+          <button class="video-card" type="button" data-yt="hCotS2va0HE" aria-label="Reproducir tutorial 1">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/hCotS2va0HE/hqdefault.jpg" alt="Miniatura del tutorial 1" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 1</span>
+              <span class="video-id">hCotS2va0HE</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="n949R9GVCdI" aria-label="Reproducir tutorial 2">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/n949R9GVCdI/hqdefault.jpg" alt="Miniatura del tutorial 2" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 2</span>
+              <span class="video-id">n949R9GVCdI</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="N4HVsORq4Yo" aria-label="Reproducir tutorial 3">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/N4HVsORq4Yo/hqdefault.jpg" alt="Miniatura del tutorial 3" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 3</span>
+              <span class="video-id">N4HVsORq4Yo</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="shBaZRd8R2M" aria-label="Reproducir tutorial 4">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/shBaZRd8R2M/hqdefault.jpg" alt="Miniatura del tutorial 4" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 4</span>
+              <span class="video-id">shBaZRd8R2M</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="8ig-Tceydis" aria-label="Reproducir tutorial 5">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/8ig-Tceydis/hqdefault.jpg" alt="Miniatura del tutorial 5" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 5</span>
+              <span class="video-id">8ig-Tceydis</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="X6rjacoVX5w" aria-label="Reproducir tutorial 6">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/X6rjacoVX5w/hqdefault.jpg" alt="Miniatura del tutorial 6" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 6</span>
+              <span class="video-id">X6rjacoVX5w</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="6278U31GIzo" aria-label="Reproducir tutorial 7">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/6278U31GIzo/hqdefault.jpg" alt="Miniatura del tutorial 7" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 7</span>
+              <span class="video-id">6278U31GIzo</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="6WrElvHb31o" aria-label="Reproducir tutorial 8">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/6WrElvHb31o/hqdefault.jpg" alt="Miniatura del tutorial 8" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 8</span>
+              <span class="video-id">6WrElvHb31o</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="SMHN3nPhxzQ" aria-label="Reproducir tutorial 9">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/SMHN3nPhxzQ/hqdefault.jpg" alt="Miniatura del tutorial 9" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 9</span>
+              <span class="video-id">SMHN3nPhxzQ</span>
+            </span>
+          </button>
+          <button class="video-card" type="button" data-yt="NzSWFVck9oM" aria-label="Reproducir tutorial 10">
+            <span class="thumb">
+              <img src="https://img.youtube.com/vi/NzSWFVck9oM/hqdefault.jpg" alt="Miniatura del tutorial 10" loading="lazy" />
+              <span class="play" aria-hidden="true">▶</span>
+            </span>
+            <span class="video-meta">
+              <span class="video-title">Tutorial 10</span>
+              <span class="video-id">NzSWFVck9oM</span>
+            </span>
+          </button>
+      </div>
+
+      <div class="note" style="margin-top:14px">
+        <strong>Consejo:</strong> para verlos sin cortes, abre este manual con <em>Live Server</em> en VS Code o desde GitHub Pages.
+      </div>
+          <div style="margin-top:18px; text-align:center;">
+      <a class="backlink" href="./index.html">← Volver a la Portada</a>
+      &nbsp;·&nbsp;
+      <a class="backlink" href="#top">↑ Volver arriba</a>
+    </div>
+    </section>
+
+
+
+  
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>Proyecto educativo</strong> — © 2026 Agustín Linares Carrera</p>
+      <p class="footer-note">Documentación del proyecto (instalación, desarrollo y uso).</p>
+    </div>
+  </footer>
+
+  <script>
+    // Reproducción inline: sustituye miniatura por iframe al hacer clic
+    (function(){
+      const cards = document.querySelectorAll('.video-card[data-yt]');
+      cards.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-yt');
+          if(!id) return;
+
+          const wrap = document.createElement('div');
+          wrap.className = 'video-embed';
+
+          const iframe = document.createElement('iframe');
+          iframe.className = 'frame';
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0';
+          iframe.title = 'Tutorial de Odoo (YouTube)';
+          iframe.loading = 'lazy';
+          iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+          iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+          iframe.allowFullscreen = true;
+
+          const bar = document.createElement('div');
+          bar.className = 'embed-bar';
+          bar.innerHTML = '<span><strong>Reproduciendo:</strong> ' + id + '</span>' +
+                          '<a href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener noreferrer">Abrir en YouTube ↗</a>';
+
+          wrap.appendChild(iframe);
+          wrap.appendChild(bar);
+
+          btn.replaceWith(wrap);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

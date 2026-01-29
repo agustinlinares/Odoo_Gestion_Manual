@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Manual paso a paso para instalar Odoo 18 (Community) en Ubuntu 24.04.3 LTS: dependencias, PostgreSQL, usuario, entorno virtual, configuración y arranque." />
+  <title>Manual de Instalación — Odoo 18 en Ubuntu 24.04.3 LTS</title>
+
+  <!-- Reutilizamos el estilo corporativo Ubuntu/Odoo -->
+  <link rel="stylesheet" href="./indexStyles.css" />
+</head>
+
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header doc-header" id="top">
+    <div class="header-bg" aria-hidden="true"></div>
+
+    <div class="header-inner">
+      <div class="kicker">Manual · Instalación · Terminal Ubuntu</div>
+
+      <h1>Instalación de Odoo 18 en Ubuntu 24.04.3 LTS</h1>
+
+      <p class="subtitle">
+        Procedimiento paso a paso para desplegar <strong>Odoo 18 (Community)</strong> en Linux Ubuntu: dependencias, PostgreSQL,
+        entorno virtual, configuración y puesta en marcha.
+      </p>
+
+      <div class="meta">
+        <div class="author">
+          <span class="dot" aria-hidden="true"></span>
+          Documento de <strong>Agustín Linares Carrera</strong>
+        </div>
+
+        <ul class="chips" aria-label="Componentes">
+          <li class="chip">Ubuntu 24.04.3</li>
+          <li class="chip">Odoo 18</li>
+          <li class="chip">PostgreSQL</li>
+          <li class="chip">Python venv</li>
+          <li class="chip">systemd</li>
+        </ul>
+      
+      <nav class="topnav" aria-label="Navegación">
+        <a class="navlink" href="./index.html">← Portada</a>
+        <a class="navlink" href="./instalacion.html">Instalación</a>
+        <a class="navlink" href="./manual_instalación_Pycharm.html">PyCharm</a>
+        <a class="navlink" href="./guia_tecnica.html">Guía técnica</a>
+        <a class="navlink" href="./manual_usuario.html">Manual de usuario</a>
+      </nav>
+
+</div>
+    </div>
+  </header>
+
+  <main id="contenido" class="document-page">
+    
+    <nav class="toc toc--auto" aria-label="Índice">
+      <h2>Índice</h2>
+      <p class="toc-hint">Se genera automáticamente a partir de los títulos del documento.</p>
+      <ul id="toc-list"></ul>
+    </nav>
+
+
+    <section id="previos" class="doc-section">
+      <h2>0. Recomendaciones previas</h2>
+      <p>
+        Antes de empezar: trabaja en una máquina actualizada, con acceso a Internet y permisos de administrador.
+        Este manual asume una instalación limpia de <strong>Ubuntu 24.04.3 LTS</strong>.
+      </p>
+
+      <div class="warn">
+        <strong>Nota importante:</strong> en varios comandos se usa la contraseña <code>admin</code> como ejemplo (por rapidez).
+        En un entorno real, usa contraseñas fuertes y guarda el valor de <code>admin_passwd</code> (master password) en un gestor seguro.
+      </div>
+        <section id="diagrama" class="doc-section">
+      <h2>Diagrama de arquitectura (Apache ↔ Odoo ↔ PostgreSQL)</h2>
+      <p>
+        En producción se recomienda acceder a Odoo mediante un <strong>proxy inverso (Apache)</strong> en los puertos 80/443,
+        mientras que Odoo escucha internamente en <code>8069</code> y se conecta a PostgreSQL en <code>5432</code>.
+      </p>
+
+      <div class="diagram" role="img" aria-label="Diagrama: Apache como proxy inverso hacia Odoo y PostgreSQL">
+        <svg viewBox="0 0 980 220" width="100%" height="220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--ubuntu-orange)"/>
+              <stop offset="1" stop-color="var(--ubuntu-aubergine)"/>
+            </linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--odoo-purple)"/>
+              <stop offset="1" stop-color="var(--ubuntu-aubergine)"/>
+            </linearGradient>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="40" y="55" rx="16" ry="16" width="260" height="110" fill="url(#g1)" opacity=".16" stroke="var(--border)"/>
+          <rect x="360" y="55" rx="16" ry="16" width="260" height="110" fill="url(#g2)" opacity=".14" stroke="var(--border)"/>
+          <rect x="680" y="55" rx="16" ry="16" width="260" height="110" fill="rgba(1,126,132,.10)" stroke="var(--border)"/>
+
+          <text x="170" y="90" text-anchor="middle" font-size="18" fill="var(--text)" font-family="system-ui, sans-serif" font-weight="700">Apache</text>
+          <text x="170" y="115" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="system-ui, sans-serif">Proxy inverso · 80/443</text>
+          <text x="170" y="140" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="system-ui, sans-serif">SSL/TLS · Headers</text>
+
+          <text x="490" y="90" text-anchor="middle" font-size="18" fill="var(--text)" font-family="system-ui, sans-serif" font-weight="700">Odoo 18</text>
+          <text x="490" y="115" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="system-ui, sans-serif">App server · 8069</text>
+          <text x="490" y="140" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="system-ui, sans-serif">proxy_mode = True</text>
+
+          <text x="810" y="90" text-anchor="middle" font-size="18" fill="var(--text)" font-family="system-ui, sans-serif" font-weight="700">PostgreSQL</text>
+          <text x="810" y="115" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="system-ui, sans-serif">DB · 5432</text>
+          <text x="810" y="140" text-anchor="middle" font-size="13" fill="var(--muted)" font-family="system-ui, sans-serif">Rol odoo18</text>
+
+          <g color="var(--muted)">
+            <line x1="300" y1="110" x2="360" y2="110" stroke="currentColor" stroke-width="3" marker-end="url(#arrow)"/>
+            <line x1="620" y1="110" x2="680" y2="110" stroke="currentColor" stroke-width="3" marker-end="url(#arrow)"/>
+          </g>
+
+          <text x="330" y="95" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="system-ui, sans-serif">HTTP(S)</text>
+          <text x="650" y="95" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="system-ui, sans-serif">SQL</text>
+        </svg>
+      </div>
+
+      <div class="note">
+        <strong>Nota:</strong> si vas a usar longpolling/WebSocket, configura el proxy como se detalla en el manual de Apache.
+      </div>
+    </section>
+
+
+    <section id="actualizar" class="doc-section">
+      <h2>1. Actualizar sistema e instalar dependencias</h2>
+      <p>
+        Actualiza paquetes y añade librerías necesarias para compilar dependencias de Python, conectar con PostgreSQL y generar assets.
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: actualización e instalación de dependencias">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · dependencias</span></div>
+        <pre><code>sudo apt update && sudo apt upgrade -y
+
+sudo apt install -y \
+  git python3-pip python3-dev python3-venv \
+  build-essential libssl-dev libffi-dev \
+  libxml2-dev libxslt1-dev zlib1g-dev \
+  libsasl2-dev libldap2-dev \
+  libjpeg-dev libjpeg8-dev liblcms2-dev \
+  libblas-dev libatlas-base-dev \
+  libpq-dev</code></pre>
+      </div>
+
+      <p>
+        (Opcional) Comprueba versión de Python:
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: comprobar versión de Python">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · python</span></div>
+        <pre><code>python3 --version</code></pre>
+      </div>
+    </section>
+
+    <section id="postgres" class="doc-section">
+      <h2>2. Instalar y configurar PostgreSQL</h2>
+      <p>
+        Odoo usa PostgreSQL como base de datos. Instálalo y crea un usuario de base de datos para Odoo.
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: instalar PostgreSQL y crear usuario">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · PostgreSQL</span></div>
+        <pre><code>sudo apt install -y postgresql postgresql-client
+
+sudo su - postgres -c "createuser -s odoo18"</code></pre>
+      </div>
+
+      <p>Ahora asigna contraseña al usuario <code>odoo18</code> en PostgreSQL:</p>
+
+      <div class="terminal" role="img" aria-label="Terminal: asignar contraseña en PostgreSQL">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · psql</span></div>
+        <pre><code>sudo su - postgres
+psql
+
+ALTER ROLE odoo18 WITH PASSWORD 'admin';
+\q
+exit</code></pre>
+      </div>
+    </section>
+
+    <section id="usuario" class="doc-section">
+      <h2>3. Crear usuario del sistema para Odoo</h2>
+      <p>
+        Por seguridad, Odoo no debería ejecutarse como <code>root</code>. Crearemos un usuario de sistema llamado <code>odoo18</code>
+        con su “home” en <code>/opt/odoo18</code>.
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: crear usuario del sistema para Odoo">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · usuario</span></div>
+        <pre><code>sudo useradd -m -d /opt/odoo18 -U -r -s /bin/bash odoo18</code></pre>
+      </div>
+    </section>
+
+    <section id="codigo" class="doc-section">
+      <h2>4. Clonar Odoo 18 y preparar entorno virtual</h2>
+      <p>
+        Descarga el código de Odoo 18 desde GitHub y crea un entorno virtual para aislar dependencias.
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: clonar Odoo 18 y crear venv">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · clone + venv</span></div>
+        <pre><code>sudo su - odoo18
+cd /opt/odoo18
+
+git clone https://github.com/odoo/odoo.git --depth 1 --branch 18.0 --single-branch odoo
+
+python3 -m venv venv
+source venv/bin/activate</code></pre>
+      </div>
+
+      <div class="note">
+        <strong>Tip:</strong> si cierras la sesión y necesitas volver a entrar, repite:
+        <code>sudo su - odoo18</code> y luego <code>source /opt/odoo18/venv/bin/activate</code>.
+      </div>
+    </section>
+
+    <section id="dependencias" class="doc-section">
+      <h2>5. Instalar requisitos de Python</h2>
+      <p>
+        Con el entorno virtual activado, instala los requisitos de Odoo. Esto puede tardar un poco dependiendo del equipo.
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: instalar dependencias de Python para Odoo">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · pip requirements</span></div>
+        <pre><code>pip install wheel
+pip install -r /opt/odoo18/odoo/requirements.txt</code></pre>
+      </div>
+    </section>
+
+    <section id="config" class="doc-section">
+      <h2>6. Configurar Odoo</h2>
+      <p>
+        Crea un archivo de configuración para centralizar parámetros (usuario de base de datos, rutas de addons, logs, etc.).
+        Dos opciones habituales:
+      </p>
+
+      <ul class="bullets" aria-label="Opciones de configuración">
+        <li><strong>Opción A (recomendada):</strong> config en <code>/etc/odoo18.conf</code> (modo “servidor”).</li>
+        <li><strong>Opción B:</strong> config local en <code>/opt/odoo18/odoo/debian/odoo.conf</code> (modo “desarrollo”).</li>
+      </ul>
+
+      <p><strong>Opción A — /etc/odoo18.conf</strong></p>
+      <div class="terminal" role="img" aria-label="Terminal: crear archivo de configuración en /etc">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · config</span></div>
+        <pre><code>sudo nano /etc/odoo18.conf</code></pre>
+      </div>
+
+      <p>Pega dentro:</p>
+      <div class="file-content" role="img" aria-label="Contenido del archivo odoo18.conf">
+<pre><code>[options]
+admin_passwd = admin
+db_host = False
+db_port = False
+db_user = odoo18
+db_password = admin
+
+addons_path = /opt/odoo18/odoo/addons
+logfile = /var/log/odoo/odoo18.log</code></pre>
+      </div>
+
+      <div class="terminal" role="img" aria-label="Terminal: crear carpeta de logs y permisos">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · logs</span></div>
+        <pre><code>sudo mkdir -p /var/log/odoo
+sudo chown odoo18:odoo18 /var/log/odoo</code></pre>
+      </div>
+
+      <p><strong>Opción B — debian/odoo.conf</strong> (si sigues un flujo similar al de tu guía)</p>
+      <div class="terminal" role="img" aria-label="Terminal: editar odoo.conf dentro del repo">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · debian/odoo.conf</span></div>
+        <pre><code>cd /opt/odoo18/odoo/debian
+nano odoo.conf</code></pre>
+      </div>
+
+      <div class="file-content" role="img" aria-label="Claves que debes revisar en odoo.conf">
+<pre><code>db_user = odoo18
+db_password = admin
+addons_path = /opt/odoo18/odoo/addons</code></pre>
+      </div>
+    </section>
+
+    <section id="arranque" class="doc-section">
+      <h2>7. Arrancar Odoo (modo consola)</h2>
+      <p>
+        Arranque directo para comprobar que todo funciona (ideal para pruebas).
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: arrancar Odoo usando archivo de configuración">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · run</span></div>
+        <pre><code>sudo su - odoo18
+source /opt/odoo18/venv/bin/activate
+
+cd /opt/odoo18/odoo
+python3 odoo-bin -c /etc/odoo18.conf</code></pre>
+      </div>
+
+      <div class="note">
+        Si estás usando la opción B (config dentro del repo), el comando sería:
+        <code>python3 odoo-bin -c debian/odoo.conf</code>.
+      </div>
+    </section>
+
+    <section id="systemd" class="doc-section">
+      <h2>8. (Opcional recomendado) Crear servicio systemd</h2>
+      <p>
+        Para producción o servidores, conviene crear un servicio para que Odoo arranque automáticamente y quede en segundo plano.
+      </p>
+
+      <div class="terminal" role="img" aria-label="Terminal: crear servicio systemd para Odoo 18">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · systemd</span></div>
+        <pre><code>sudo nano /etc/systemd/system/odoo18.service</code></pre>
+      </div>
+
+      <p>Contenido sugerido:</p>
+      <div class="file-content" role="img" aria-label="Contenido del servicio odoo18.service">
+<pre><code>[Unit]
+Description=Odoo 18
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=odoo18
+Group=odoo18
+SyslogIdentifier=odoo18
+PermissionsStartOnly=true
+ExecStart=/opt/odoo18/venv/bin/python3 /opt/odoo18/odoo/odoo-bin -c /etc/odoo18.conf
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+      </div>
+
+      <p>Activa y arranca:</p>
+      <div class="terminal" role="img" aria-label="Terminal: activar y arrancar el servicio">
+        <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · enable/start</span></div>
+        <pre><code>sudo systemctl daemon-reload
+sudo systemctl enable odoo18
+sudo systemctl start odoo18
+sudo systemctl status odoo18</code></pre>
+      </div>
+    </section>
+
+    <section id="db" class="doc-section">
+      <h2>9. Crear la base de datos desde el navegador</h2>
+      <p>
+        Abre en el navegador:
+        <code>http://localhost:8069</code> (o <code>http://IP_DEL_SERVIDOR:8069</code>).
+        Verás el selector de bases de datos (<code>/web/database/selector</code>).
+      </p>
+
+      <div class="file-content" role="img" aria-label="Datos típicos de creación de base de datos en Odoo">
+<pre><code>Master password: admin
+Database name: odoo18
+Email: admin
+Password: admin
+Language: Spanish
+Country: Spain
+Demo Data: (desmarcado)</code></pre>
+      </div>
+
+      <div class="note">
+        <strong>¡Listo!</strong> Si Odoo arranca sin errores, ya puedes instalar aplicaciones y empezar a usar tu módulo.
+      </div>
+    </section>
+
+    <section id="verificacion" class="doc-section">
+      <h2>10. Verificación final (servicio, puerto y logs)</h2>
+      <p>
+        Con el servicio habilitado, valida que Odoo está <strong>activo</strong>, que escucha en el puerto <code>8069</code>
+        y que no hay errores en el <em>journal</em>.
+      </p>
+
+      <div class="img-grid">
+        <figure class="img-figure">
+          <a href="img/Figura_18.png" target="_blank" rel="noopener">
+            <img loading="lazy" src="img/Figura_18.png" alt="Figura 18 — Habilitar y arrancar el servicio">
+          </a>
+          <figcaption>Figura 18 — Habilitar y arrancar el servicio</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <a href="img/Figura_19.png" target="_blank" rel="noopener">
+            <img loading="lazy" src="img/Figura_19.png" alt="Figura 19 — Comprobar el puerto 8069 y logs">
+          </a>
+          <figcaption>Figura 19 — Comprobar el puerto 8069 y logs</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <a href="img/Figura_20.png" target="_blank" rel="noopener">
+            <img loading="lazy" src="img/Figura_20.png" alt="Figura 20 — Siguiente paso: Proxy inverso por dominio">
+          </a>
+          <figcaption>Figura 20 — Siguiente paso: Proxy inverso por dominio</figcaption>
+        </figure>
+      </div>
+
+      <div class="warn">
+        <strong>Producción:</strong> no expongas <code>:8069</code> directamente en Internet. Usa un proxy inverso con HTTPS
+        y cabeceras correctas y activa <code>proxy_mode = True</code> en Odoo.
+      </div>
+    </section>
+
+
+    <section id="capturas-terminal" class="doc-section">
+      <h2>Capturas tipo “terminal” (para tu documentación)</h2>
+      <p>
+        Si quieres “imágenes” estilo captura (como en el vídeo), puedes reutilizar estas figuras.
+        No son screenshots reales: son bloques HTML/CSS con aspecto de terminal (más ligero y consistente visualmente).
+      </p>
+
+      <figure class="figure">
+        <div class="terminal" role="img" aria-label="Figura 1: clonación de repositorio">
+          <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Figura 1 · git clone</span></div>
+          <pre><code>cd /opt/odoo18
+git clone https://github.com/odoo/odoo.git --depth 1 --branch 18.0 --single-branch odoo</code></pre>
+        </div>
+        <figcaption>Figura 1. Descarga de Odoo 18 desde GitHub.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <div class="terminal" role="img" aria-label="Figura 2: crear y activar entorno virtual">
+          <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Figura 2 · venv</span></div>
+          <pre><code>python3 -m venv venv
+source venv/bin/activate</code></pre>
+        </div>
+        <figcaption>Figura 2. Creación y activación del entorno virtual.</figcaption>
+      </figure>
+
+      <figure class="figure">
+        <div class="terminal" role="img" aria-label="Figura 3: ejecutar Odoo con configuración">
+          <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Figura 3 · odoo-bin</span></div>
+          <pre><code>cd /opt/odoo18/odoo
+python3 odoo-bin -c /etc/odoo18.conf</code></pre>
+        </div>
+        <figcaption>Figura 3. Arranque de Odoo usando el archivo de configuración.</figcaption>
+      </figure>
+    </section>
+
+    <div style="margin-top: 18px; text-align: center;">
+      <a class="backlink" href="index.html">← Volver a la Portada</a>
+    </div>
+  
+    <section id="capturas" class="doc-section">
+      <h2>Anexo · Capturas de terminal (Figuras 01–20)</h2>
+      <p>
+        Estas capturas corresponden al procedimiento de instalación y sirven como evidencia visual del proceso.
+        Están ordenadas para que puedas compararlas con los bloques de comandos del documento.
+      </p>
+      <div class="img-grid">
+
+        <figure class="img-figure">
+          <img src="img/Figura_01.png" alt="Figura 01 — Entrar como superusuario y comprobar Python">
+          <figcaption>Figura 01 — Entrar como superusuario y comprobar Python</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_02.png" alt="Figura 02 — Actualizar el sistema">
+          <figcaption>Figura 02 — Actualizar el sistema</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_03.png" alt="Figura 03 — Instalar dependencias básicas">
+          <figcaption>Figura 03 — Instalar dependencias básicas</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_04.png" alt="Figura 04 — Instalar PostgreSQL (servidor y cliente)">
+          <figcaption>Figura 04 — Instalar PostgreSQL (servidor y cliente)</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_05.png" alt="Figura 05 — Crear usuario PostgreSQL para Odoo">
+          <figcaption>Figura 05 — Crear usuario PostgreSQL para Odoo</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_06.png" alt="Figura 06 — Asignar contraseña al usuario PostgreSQL">
+          <figcaption>Figura 06 — Asignar contraseña al usuario PostgreSQL</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_07.png" alt="Figura 07 — Crear usuario del sistema para ejecutar Odoo">
+          <figcaption>Figura 07 — Crear usuario del sistema para ejecutar Odoo</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_08.png" alt="Figura 08 — Descargar el código de Odoo 18 desde GitHub">
+          <figcaption>Figura 08 — Descargar el código de Odoo 18 desde GitHub</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_09.png" alt="Figura 09 — Instalar python3-venv y crear entorno virtual">
+          <figcaption>Figura 09 — Instalar python3-venv y crear entorno virtual</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_10.png" alt="Figura 10 — Instalar librerías del sistema para compilar dependencias">
+          <figcaption>Figura 10 — Instalar librerías del sistema para compilar dependencias</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_11.png" alt="Figura 11 — Instalar dependencias Python de Odoo">
+          <figcaption>Figura 11 — Instalar dependencias Python de Odoo</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_12.png" alt="Figura 12 — Crear/editar el archivo de configuración odoo.conf">
+          <figcaption>Figura 12 — Crear/editar el archivo de configuración odoo.conf</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_13.png" alt="Figura 13 — Arrancar Odoo 18 usando odoo-bin y el config">
+          <figcaption>Figura 13 — Arrancar Odoo 18 usando odoo-bin y el config</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_14.png" alt="Figura 14 — Crear la base de datos desde el navegador">
+          <figcaption>Figura 14 — Crear la base de datos desde el navegador</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_15.png" alt="Figura 15 — Abrir el proyecto en Visual Studio Code">
+          <figcaption>Figura 15 — Abrir el proyecto en Visual Studio Code</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_16.png" alt="Figura 16 — Instalar wkhtmltopdf (reportes PDF)">
+          <figcaption>Figura 16 — Instalar wkhtmltopdf (reportes PDF)</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_17.png" alt="Figura 17 — Crear servicio systemd (ejemplo)">
+          <figcaption>Figura 17 — Crear servicio systemd (ejemplo)</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <a href="img/Figura_18.png" target="_blank" rel="noopener"><img loading="lazy" src="img/Figura_18.png" alt="Figura 18 — Habilitar y arrancar el servicio"></a>
+          <figcaption>Figura 18 — Habilitar y arrancar el servicio</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <a href="img/Figura_19.png" target="_blank" rel="noopener"><img loading="lazy" src="img/Figura_19.png" alt="Figura 19 — Comprobar el puerto 8069 y logs"></a>
+          <figcaption>Figura 19 — Comprobar el puerto 8069 y logs</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <a href="img/Figura_20.png" target="_blank" rel="noopener"><img loading="lazy" src="img/Figura_20.png" alt="Figura 20 — Siguiente paso: Proxy inverso por dominio"></a>
+          <figcaption>Figura 20 — Siguiente paso: Proxy inverso por dominio</figcaption>
+        </figure>
+
+      </div>
+    </section>
+
+<section id="video" class="doc-section">
+  <h2>Vídeo del proceso</h2>
+  <p>
+    Si prefieres seguir el proceso en formato audiovisual, aquí tienes el vídeo de referencia al final del manual.
+  </p>
+
+  <div class="video-wrap" role="region" aria-label="Vídeo: Instalación de Odoo 18 en Ubuntu">
+    <iframe
+      src="https://www.youtube.com/embed/CaUz49W0Eyo"
+      title="Instalación de Odoo 18 en Ubuntu 24.04.3 LTS"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen>
+    </iframe>
+  </div>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>Proyecto educativo</strong> — © 2026 Agustín Linares Carrera</p>
+      <p class="footer-note">Documentación del proyecto (instalación, desarrollo y uso).</p>
+    </div>
+  </footer>
+  <script>
+    (function () {
+      function slugify(str){
+        return (str || '').toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+          .replace(/[^a-z0-9\s-]/g,'')
+          .trim().replace(/\s+/g,'-');
+      }
+
+      const toc = document.getElementById('toc-list');
+      if(!toc) return;
+
+      const headings = Array.from(document.querySelectorAll('main .doc-section > h2'));
+      headings.forEach((h2) => {
+        const section = h2.closest('.doc-section');
+        if(!section) return;
+        if(!section.id) section.id = slugify(h2.textContent);
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + section.id;
+        a.textContent = h2.textContent;
+        li.appendChild(a);
+        toc.appendChild(li);
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Instalación de Odoo 18 en PyCharm (Ubuntu)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Guía paso a paso para instalar y ejecutar Odoo 18 en PyCharm sobre Ubuntu, incluyendo PostgreSQL, entorno virtual, requirements y configuración Run/Debug." />
+  <link rel="stylesheet" href="indexStyles.css" />
+</head>
+
+<body>
+
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header doc-header" id="top">
+    <div class="header-bg" aria-hidden="true"></div>
+    <div class="header-inner">
+      <div class="kicker">Odoo 18 · Desarrollo · PyCharm · Ubuntu</div>
+      <h1>Instalación de Odoo 18 en PyCharm (Ubuntu)</h1>
+      <p class="subtitle">
+        Guía paso a paso para preparar un entorno de desarrollo: Git, PostgreSQL, entorno virtual,
+        dependencias y configuración <em>Run/Debug</em>.
+      </p>
+
+      <div class="meta">
+        <div class="author">
+          <span class="dot" aria-hidden="true"></span>
+          Documento de <strong>Agustín Linares Carrera</strong>
+        </div>
+
+        <ul class="chips" aria-label="Componentes">
+          <li class="chip">Ubuntu 24.04.3</li>
+          <li class="chip">Odoo 18</li>
+          <li class="chip">PostgreSQL</li>
+          <li class="chip">Python venv</li>
+          <li class="chip">systemd</li>
+        </ul>
+
+      <nav class="topnav" aria-label="Navegación">
+        <a class="navlink" href="./index.html">← Portada</a>
+        <a class="navlink" href="./instalacion.html">Instalación</a>
+        <a class="navlink" href="./manual_instalación_Pycharm.html">PyCharm</a>
+        <a class="navlink" href="./guia_tecnica.html">Guía técnica</a>
+        <a class="navlink" href="./manual_usuario.html">Manual de usuario</a>
+      </nav>
+    </div>
+  </header>
+
+<main id="contenido" class="document-page">
+
+  <nav class="toc toc--auto" aria-label="Índice">
+    <h2>Índice</h2>
+    <p class="toc-hint">Se genera automáticamente a partir de los títulos del documento.</p>
+    <ul id="toc-list"></ul>
+  </nav>
+
+
+<section class="doc-section">
+  <h1>Instalación de Odoo 18 en PyCharm</h1>
+  <p>
+    Este manual describe cómo preparar un entorno de desarrollo para <strong>Odoo 18 (Community)</strong>
+    usando <strong>Ubuntu</strong> y <strong>PyCharm</strong>. Está basado en el tutorial en vídeo de YouTube
+    (lista enlazada en el enunciado) y en los pasos habituales de instalación (Git, Python, PostgreSQL,
+    entorno virtual y configuración <em>Run/Debug</em>).
+  </p>
+
+  <div class="panel callout">
+    <strong>Recomendación:</strong> si trabajas dentro de VirtualBox (como en el tutorial), asigna al menos
+    <strong>4 CPU</strong> y <strong>8 GB RAM</strong> para que la instalación de dependencias vaya fluida.
+  </div>
+</section>
+
+<section class="doc-section">
+  <h2>Requisitos previos</h2>
+  <ul>
+    <li>Ubuntu 22.04+ / 24.04+ (Desktop recomendado si usarás PyCharm con interfaz gráfica).</li>
+    <li>Python 3.10+ (en Ubuntu 24.04 suele estar disponible por defecto).</li>
+    <li>Git y herramientas de compilación para dependencias Python.</li>
+    <li>PostgreSQL (usuario dedicado para Odoo).</li>
+    <li>PyCharm Community o Professional.</li>
+  </ul>
+</section>
+
+<!-- PASO 1 -->
+<section class="doc-section">
+  <h2>1. Preparación del entorno</h2>
+  <p>
+    Actualiza el sistema y reinicia para comenzar con un entorno limpio. En una VM, aprovecha para
+    instalar también las <em>Guest Additions</em> si las usas (portapapeles, resolución dinámica, etc.).
+  </p>
+
+  <pre><code>sudo apt update &amp;&amp; sudo apt upgrade -y
+sudo reboot</code></pre>
+
+  <figure>
+    <img src="img/image-38.png" alt="Sistema Ubuntu actualizado" />
+    <figcaption>
+      <strong>Imagen 38.</strong> Sistema Ubuntu actualizado y listo para desarrollo.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 2 -->
+<section class="doc-section">
+  <h2>2. Descarga del código fuente de Odoo 18</h2>
+  <p>
+    Clona el repositorio oficial de Odoo y sitúate en la rama <code>18.0</code>.
+    En el tutorial se utiliza un directorio de trabajo bajo <code>~/odoo/</code> para mantener todo organizado.
+  </p>
+
+  <pre><code>sudo apt install -y git
+mkdir -p ~/odoo &amp;&amp; cd ~/odoo
+git clone --branch 18.0 https://github.com/odoo/odoo.git odoo18
+cd odoo18</code></pre>
+
+  <figure>
+    <img src="img/image-39.png" alt="Clonado del repositorio Odoo 18" />
+    <figcaption>
+      <strong>Imagen 39.</strong> Clonado del repositorio oficial de Odoo 18.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 3 -->
+<section class="doc-section">
+  <h2>3. Apertura del proyecto en PyCharm</h2>
+  <p>
+    Abre PyCharm y selecciona la carpeta del proyecto (<code>odoo18</code>) con la opción <em>Open</em>.
+    Si PyCharm sugiere crear un entorno automáticamente, puedes cancelarlo y crear el <code>.venv</code>
+    manualmente (recomendado para seguir el tutorial paso a paso).
+  </p>
+
+  <figure>
+    <img src="img/image-40.png" alt="Abrir proyecto Odoo en PyCharm" />
+    <figcaption>
+      <strong>Imagen 40.</strong> Apertura del proyecto Odoo 18 en PyCharm.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 4 -->
+<section class="doc-section">
+  <h2>4. Creación del entorno virtual (venv)</h2>
+  <p>
+    Crea un entorno virtual dentro del proyecto. Esto aísla dependencias y evita ensuciar el Python del sistema.
+  </p>
+
+  <pre><code>sudo apt install -y python3-venv
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip</code></pre>
+
+  <p>
+    En PyCharm: <em>Settings</em> → <em>Project</em> → <em>Python Interpreter</em> y selecciona
+    el intérprete <code>.venv/bin/python</code>.
+  </p>
+
+  <figure>
+    <img src="img/image-41.png" alt="Configuración del entorno virtual en PyCharm" />
+    <figcaption>
+      <strong>Imagen 41.</strong> Entorno virtual configurado como intérprete del proyecto.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 5 -->
+<section class="doc-section">
+  <h2>5. Instalación de dependencias</h2>
+  <p>
+    Con el entorno virtual activo, instala las dependencias desde <code>requirements.txt</code>.
+    Si aparece un error puntual (por ejemplo con <code>psycopg2</code>), una alternativa frecuente
+    es instalar <code>psycopg2-binary</code>.
+  </p>
+
+  <pre><code>pip install -r requirements.txt
+
+# Alternativa común si falla psycopg2 (según el caso):
+pip install psycopg2-binary</code></pre>
+
+  <figure>
+    <img src="img/image-42.png" alt="Instalación de dependencias Python" />
+    <figcaption>
+      <strong>Imagen 42.</strong> Instalación de dependencias de Odoo 18.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 6 -->
+<section class="doc-section">
+  <h2>6. Configuración de PostgreSQL</h2>
+  <p>
+    Odoo necesita un usuario de PostgreSQL (no uses <code>postgres</code> directamente).
+    Crea un usuario dedicado (por ejemplo <code>odoo</code>) y establece contraseña.
+  </p>
+
+  <pre><code>sudo apt install -y postgresql
+sudo -u postgres createuser -s odoo
+sudo -u postgres psql -c "ALTER USER odoo WITH PASSWORD 'TU_PASSWORD';"</code></pre>
+
+  <figure>
+    <img src="img/image-43.png" alt="Creación de usuario PostgreSQL para Odoo" />
+    <figcaption>
+      <strong>Imagen 43.</strong> Usuario PostgreSQL creado para Odoo 18.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 7 -->
+<section class="doc-section">
+  <h2>7. Archivo de configuración: <code>odoo.conf</code></h2>
+  <p>
+    Crea un archivo <code>odoo.conf</code> en la raíz del proyecto (<code>odoo18/</code>) para centralizar
+    parámetros: base de datos, rutas de <em>addons</em>, puertos, etc.
+  </p>
+
+  <pre><code>[options]
+; ====== Base de datos ======
+db_host = False
+db_port = False
+db_user = odoo
+db_password = TU_PASSWORD
+
+; ====== Addons ======
+addons_path = /home/TU_USUARIO/odoo/odoo18/addons
+
+; ====== Servidor ======
+xmlrpc_port = 8069
+log_level = info</code></pre>
+
+  <div class="panel callout">
+    <strong>Tip:</strong> si creas una carpeta para módulos propios (por ejemplo <code>~/odoo/custom_addons</code>),
+    añade su ruta a <code>addons_path</code> separada por comas.
+  </div>
+</section>
+
+<!-- PASO 8 -->
+<section class="doc-section">
+  <h2>8. Configuración de ejecución (Run/Debug) en PyCharm</h2>
+  <p>
+    Crea una configuración de tipo <strong>Python</strong>:
+  </p>
+
+  <ul>
+    <li><strong>Script path:</strong> <code>odoo-bin</code> (dentro de la carpeta del proyecto).</li>
+    <li><strong>Parameters:</strong> <code>-c /ruta/a/odoo.conf</code></li>
+    <li><strong>Working directory:</strong> la carpeta raíz del proyecto (<code>odoo18</code>).</li>
+    <li><strong>Python interpreter:</strong> el del entorno virtual (<code>.venv</code>).</li>
+  </ul>
+
+  <figure>
+    <img src="img/image-44.png" alt="Configuración Run Debug en PyCharm" />
+    <figcaption>
+      <strong>Imagen 44.</strong> Configuración de ejecución de Odoo en PyCharm.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- PASO 9 -->
+<section class="doc-section">
+  <h2>9. Ejecución y acceso a Odoo</h2>
+  <p>
+    Ejecuta la configuración. Si todo está correcto, verás el arranque de Odoo en la consola y podrás
+    acceder desde el navegador.
+  </p>
+
+  <pre><code>http://localhost:8069</code></pre>
+
+  <figure>
+    <img src="img/image-45.png" alt="Pantalla inicial de Odoo 18" />
+    <figcaption>
+      <strong>Imagen 45.</strong> Odoo 18 ejecutándose correctamente en localhost.
+    </figcaption>
+  </figure>
+
+  <div class="panel callout">
+    <strong>Si no abre:</strong> revisa que <code>xmlrpc_port</code> en <code>odoo.conf</code> coincida con el puerto
+    que estás intentando abrir, y que el usuario/contraseña de PostgreSQL sean correctos.
+  </div>
+</section>
+
+<section class="doc-section">
+  <h2>Problemas frecuentes</h2>
+  <ul>
+    <li><strong>Error instalando dependencias:</strong> instala paquetes de sistema (build-essential, libxml2, libxslt, etc.) y reintenta.</li>
+    <li><strong>psycopg2 falla al compilar:</strong> prueba <code>pip install psycopg2-binary</code> o instala <code>libpq-dev</code>.</li>
+    <li><strong>Permisos / rutas de addons:</strong> asegúrate de que <code>addons_path</code> apunta a un directorio existente.</li>
+    <li><strong>Puerto ocupado:</strong> cambia <code>xmlrpc_port</code> en <code>odoo.conf</code> (por ejemplo 8070) y reinicia.</li>
+  </ul>
+</section>
+
+<section class="doc-section">
+  <h2>Conclusión</h2>
+  <p>
+    Con PyCharm tendrás un entorno cómodo para desarrollar con Odoo 18: autocompletado, navegación por el código,
+    ejecución y depuración. A partir de aquí, el siguiente paso habitual es añadir un directorio de
+    <em>custom_addons</em> y crear tu primer módulo.
+  </p>
+</section>
+
+<!-- Sección de recurso adicional -->
+ <section>
+<!-- Incrustación del video -->
+
+  </div>
+    <section class="doc-section">
+<section class="doc-section">
+<h2>📺 Videotutorial en YouTube</h2>
+<p>
+A continuación puedes ver directamente el videotutorial utilizado como referencia
+para esta instalación, sin salir del artículo:
+</p>
+
+
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;">
+<iframe
+src="https://www.youtube.com/embed/aMDwueq9_sY?list=PLeJtXzTubzj8jr-dV7luM1G_xfUanwbKh"
+title="Instalación de Odoo 18 en PyCharm"
+style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+frameborder="0"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+allowfullscreen>
+</iframe>
+</div>
+
+
+<p style="margin-top: 0.75rem;">
+🔗 <a href="https://www.youtube.com/watch?v=aMDwueq9_sY&list=PLeJtXzTubzj8jr-dV7luM1G_xfUanwbKh"
+target="_blank" rel="noopener">
+Abrir la lista completa en YouTube
+</a>
+</p>
+</section>
+    <div style="margin-top:18px; text-align:center;">
+      <a class="backlink" href="./index.html">← Volver a la Portada</a>
+      &nbsp;·&nbsp;
+      <a class="backlink" href="#top">↑ Volver arriba</a>
+    </div>
+    </section>
+
+</main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>Proyecto educativo</strong> — © 2026 Agustín Linares Carrera</p>
+      <p class="footer-note">Documentación del proyecto (instalación, desarrollo y uso).</p>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      const list = document.getElementById('toc-list');
+      if(!list) return;
+      const headings = Array.from(document.querySelectorAll('main .doc-section > h2, main .doc-section > h1'));
+      const slugify = (s) => (s||'').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9\s-]/g,'').trim()
+        .replace(/\s+/g,'-').replace(/-+/g,'-');
+      headings.forEach(h => {
+        const section = h.closest('.doc-section');
+        if(section && !section.id) section.id = slugify(h.textContent);
+        const id = (section && section.id) ? section.id : (h.id || slugify(h.textContent));
+        if(!id) return;
+        if(!h.id) h.id = id;
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + id;
+        a.textContent = h.textContent;
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+    })();
+  </script>
+
+</body>
+</html>

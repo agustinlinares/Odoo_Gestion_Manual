@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Desarrollo — Crear un módulo en Odoo 18</title>
+  <meta name="description" content="Guía paso a paso para crear un módulo en Odoo 18: scaffold, manifest, modelos, vistas, seguridad y menús. Basado en un tutorial de YouTube." />
+  <link rel="stylesheet" href="./indexStyles.css" />
+  <style>
+    .steps { counter-reset: paso; }
+    .step { padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: rgba(255,255,255,.40); box-shadow: var(--shadow); margin: 12px 0; }
+    @media (prefers-color-scheme: dark){ .step{ background: rgba(20,18,26,.38); } }
+    .step h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .step h3::before { counter-increment: paso; content: "Paso " counter(paso) " · "; color: var(--accent); font-weight: 900; }
+    .figure-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; margin-top: 12px; }
+    .figure-grid .img-figure { grid-column: span 6; }
+    @media (max-width: 900px){ .figure-grid .img-figure{ grid-column: span 12; } }
+    .video-wrap{ border:1px solid var(--border); border-radius: var(--radius-lg); overflow:hidden; box-shadow: var(--shadow); background: var(--surface); }
+    .video-wrap iframe{ width:100%; aspect-ratio:16/9; border:0; display:block; }
+    .doc-btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px; border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(233,84,32,.10);
+      text-decoration:none; font-weight:900;
+    }
+    .doc-btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header doc-header" id="top">
+    <div class="header-bg" aria-hidden="true"></div>
+    <div class="header-inner">
+      <div class="kicker">Odoo 18 · Desarrollo · Módulos (Backend)</div>
+      <h1>Crear un módulo en Odoo 18 paso a paso</h1>
+      <p class="subtitle">
+        Artículo práctico para construir un módulo desde cero (ejemplo: <strong>Gestor de tareas</strong>):
+        estructura, <code>__manifest__.py</code>, modelos Python, vistas XML, seguridad y menús.
+      </p>
+
+      <div class="meta">
+        <div class="author">
+          <span class="dot" aria-hidden="true"></span>
+          Documento de <strong>Agustín Linares Carrera</strong>
+        </div>
+        
+        <ul class="chips" aria-label="Etiquetas">
+          <li class="chip">Ubuntu 24.04 LTS</li>
+          <li class="chip">Odoo 18</li>
+          <li class="chip">Python</li>
+          <li class="chip">XML Views</li>
+          <li class="chip">Security</li>
+        </ul>
+      </div>
+
+      <nav class="topnav" aria-label="Navegación">
+        <a class="navlink" href="./index.html">← Portada</a>
+        <a class="navlink" href="./instalacion.html">Instalación</a>
+        <a class="navlink" href="./manual_instalación_Pycharm.html">PyCharm</a>
+        <a class="navlink" href="./guia_tecnica.html">Guía técnica</a>
+        <a class="navlink" href="./manual_usuario.html">Manual de usuario</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido" class="document-page">
+
+    <nav class="toc toc--auto" aria-label="Índice">
+      <h2>Índice</h2>
+      <p class="toc-hint">Se genera automáticamente a partir de los títulos del documento.</p>
+      <ul id="toc-list"></ul>
+    </nav>
+
+    <section class="doc-section">
+      <h2>Objetivo del módulo</h2>
+      <p>
+        El tutorial guía la creación de un módulo sencillo para aprender la mecánica de Odoo:
+        <strong>modelo</strong> (ORM), <strong>vistas</strong> (XML), <strong>menús</strong> y <strong>seguridad</strong>.
+      </p>
+      <div class="note">
+        <strong>Consejo:</strong> crea tus módulos en un directorio de addons separado (<code>custom_addons</code>) y añádelo a <code>addons_path</code>.
+      </div>
+    </section>
+
+    <section class="doc-section">
+      <h2>Requisitos previos</h2>
+      <ul class="bullets">
+        <li>Odoo 18 instalado desde código (ver tu manual de instalación).</li>
+        <li>Carpeta para addons personalizados: <code>/opt/odoo18/custom_addons</code>.</li>
+        <li>Entorno virtual activado.</li>
+      </ul>
+    </section>
+
+    <section class="doc-section">
+      <h2>Estructura recomendada</h2>
+      <div class="file-content"><pre><code>/opt/odoo18/
+  odoo/
+  custom_addons/
+    gestor_tareas/
+      __init__.py
+      __manifest__.py
+      models/
+      views/
+      security/
+      data/</code></pre></div>
+
+      <div class="figure-grid">
+        <figure class="img-figure">
+          <img src="img/Figura_46.svg" alt="Figura 46 — Estructura del módulo" loading="lazy" onerror="this.onerror=null;this.src='img/image-46.svg';">
+          <figcaption><strong>Figura 46.</strong> Estructura del módulo.</figcaption>
+        </figure>
+        <figure class="img-figure">
+          <img src="img/Figura_47.svg" alt="Figura 47 — Scaffold del módulo" loading="lazy" onerror="this.onerror=null;this.src='img/image-47.svg';">
+          <figcaption><strong>Figura 47.</strong> Creación del módulo base con scaffold.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="doc-section steps">
+      <h2>Desarrollo del módulo</h2>
+
+      <div class="step">
+        <h3>Crear el módulo base (scaffold)</h3>
+        <div class="terminal" role="img" aria-label="Terminal: scaffold del módulo">
+          <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · scaffold</span></div>
+          <pre><code>cd /opt/odoo18/odoo
+mkdir -p /opt/odoo18/custom_addons
+
+./odoo-bin scaffold gestor_tareas /opt/odoo18/custom_addons</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>Configurar el manifest</h3>
+        <div class="file-content"><pre><code>{
+  'name': 'Gestor de tareas',
+  'version': '18.0.1.0.0',
+  'summary': 'Tareas por usuario (ejemplo didáctico)',
+  'depends': ['base'],
+  'data': [
+    'security/ir.model.access.csv',
+    'views/task_views.xml',
+    'views/menu.xml'
+  ],
+  'application': True,
+  'license': 'LGPL-3'
+}</code></pre></div>
+      </div>
+
+      <div class="step">
+        <h3>Crear el modelo (Python)</h3>
+        <div class="file-content"><pre><code>from odoo import models, fields
+
+class GestorTarea(models.Model):
+    _name = 'gestor.tarea'
+    _description = 'Tarea'
+
+    name = fields.Char(required=True)
+    user_id = fields.Many2one('res.users', string='Asignado a')
+    date_deadline = fields.Date(string='Fecha límite')
+    state = fields.Selection([
+        ('draft', 'Borrador'),
+        ('in_progress', 'En curso'),
+        ('done', 'Hecho'),
+    ], default='draft', required=True)</code></pre></div>
+
+        <div class="figure-grid">
+          <figure class="img-figure">
+            <img src="img/Figura_48.svg" alt="Figura 48 — Modelo Python" loading="lazy" onerror="this.onerror=null;this.src='img/image-48.svg';">
+            <figcaption><strong>Figura 48.</strong> Modelo y campos.</figcaption>
+          </figure>
+          <figure class="img-figure">
+            <img src="img/Figura_49.svg" alt="Figura 49 — Vistas XML" loading="lazy" onerror="this.onerror=null;this.src='img/image-49.svg';">
+            <figcaption><strong>Figura 49.</strong> Vistas: tree/form/search.</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>Crear las vistas (XML)</h3>
+        <div class="file-content"><pre><code>&lt;record id=&quot;view_task_tree&quot; model=&quot;ir.ui.view&quot;&gt;
+  &lt;field name=&quot;model&quot;&gt;gestor.tarea&lt;/field&gt;
+  &lt;field name=&quot;arch&quot; type=&quot;xml&quot;&gt;
+    &lt;tree&gt;
+      &lt;field name=&quot;name&quot;/&gt;
+      &lt;field name=&quot;user_id&quot;/&gt;
+      &lt;field name=&quot;date_deadline&quot;/&gt;
+      &lt;field name=&quot;state&quot;/&gt;
+    &lt;/tree&gt;
+  &lt;/field&gt;
+&lt;/record&gt;</code></pre></div>
+      </div>
+
+      <div class="step">
+        <h3>Añadir seguridad</h3>
+        <div class="file-content"><pre><code>id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gestor_tarea_user,gestor.tarea user,model_gestor_tarea,base.group_user,1,1,1,0</code></pre></div>
+        <figure class="img-figure">
+          <img src="img/image-50.svg" alt="Figura 50 — Seguridad" loading="lazy" onerror="this.onerror=null;this.src='img/image-50.svg';">
+          <figcaption><strong>Figura 50.</strong> Acceso básico.</figcaption>
+        </figure>
+      </div>
+
+      <div class="step">
+        <h3>Crear acción y menús</h3>
+        <div class="file-content"><pre><code>&lt;record id=&quot;action_gestor_tareas&quot; model=&quot;ir.actions.act_window&quot;&gt;
+  &lt;field name=&quot;name&quot;&gt;Gestor de tareas&lt;/field&gt;
+  &lt;field name=&quot;res_model&quot;&gt;gestor.tarea&lt;/field&gt;
+  &lt;field name=&quot;view_mode&quot;&gt;tree,form&lt;/field&gt;
+&lt;/record&gt;
+
+&lt;menuitem id=&quot;menu_gestor_root&quot; name=&quot;Gestor de tareas&quot;/&gt;
+&lt;menuitem id=&quot;menu_gestor_tareas&quot; name=&quot;Tareas&quot; parent=&quot;menu_gestor_root&quot; action=&quot;action_gestor_tareas&quot;/&gt;</code></pre></div>
+        <figure class="img-figure">
+          <img src="img/Figura_51.svg" alt="Figura 51 — Menús y acción" loading="lazy" onerror="this.onerror=null;this.src='img/image-51.svg';">
+          <figcaption><strong>Figura 51.</strong> Acceso desde el menú.</figcaption>
+        </figure>
+      </div>
+
+      <div class="step">
+        <h3>Probar e instalar el módulo</h3>
+        <div class="terminal" role="img" aria-label="Terminal: arrancar Odoo">
+          <div class="bar"><span class="dot" aria-hidden="true"></span><span class="title">Terminal · run</span></div>
+          <pre><code>python3 odoo-bin -c /etc/odoo18.conf
+
+# Apps ▸ Actualizar lista de aplicaciones ▸ buscar “Gestor de tareas” ▸ Instalar</code></pre>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="doc-section">
+      <h2>Buenas prácticas</h2>
+      <ul class="bullets">
+        <li>Usa <code>custom_addons</code> fuera del core de Odoo.</li>
+        <li>No edites módulos estándar: extiende con herencia.</li>
+        <li>Mantén permisos mínimos y añade reglas cuando sea necesario.</li>
+      </ul>
+
+      <div style="margin-top:14px; display:flex; flex-wrap:wrap; gap:10px;">
+        <a class="doc-btn" href="https://www.odoo.com/documentation/18.0/es/developer/tutorials.html" target="_blank" rel="noopener noreferrer">
+          📘 Tutoriales oficiales (Developer) <span aria-hidden="true">↗</span>
+        </a>
+        <a class="doc-btn" href="https://www.odoo.com/documentation/18.0/es_419/developer/reference/backend/module.html" target="_blank" rel="noopener noreferrer">
+          📘 Manifests y estructura <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="doc-section">
+      <h2>Tutorial en vídeo</h2>
+      <p>Referencia principal del artículo:</p>
+      <div class="video-wrap">
+        <iframe src="https://www.youtube-nocookie.com/embed/QXJCCo9bQC0" title="Crear un módulo en Odoo 18 (tutorial)" loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    <div style="margin-top:18px; text-align:center;">
+      <a class="backlink" href="./index.html">← Volver a la Portada</a>
+      &nbsp;·&nbsp;
+      <a class="backlink" href="#top">↑ Volver arriba</a>
+    </div>
+    </section>
+
+  </main>
+
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>Proyecto educativo</strong> — © 2026 Agustín Linares Carrera</p>
+      <p class="footer-note">Documentación del proyecto (instalación, desarrollo y uso).</p>
+    </div>
+  </footer>
+
+
+  <script>
+    (function(){
+      const list = document.getElementById('toc-list');
+      if(!list) return;
+      const headings = Array.from(document.querySelectorAll('main h2'));
+      const slugify = (s) => s.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^a-z0-9\s-]/g,'').trim()
+        .replace(/\s+/g,'-').replace(/-+/g,'-');
+      headings.forEach(h => {
+        if(!h.id) h.id = slugify(h.textContent);
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent;
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+    })();
+  </script>
+</body>
+</html>
